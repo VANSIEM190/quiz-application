@@ -1,4 +1,4 @@
-import questions from '../tous le tableau quiz/quiz-tableau'
+import questions from '../all-tbl-quiz/quiz-tableau'
 import Quiz from '../quiz/quiz'
 import ErrorPage from '../erros page/Error-page'
 import { useParams } from 'react-router-dom'
