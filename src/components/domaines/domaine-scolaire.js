@@ -1,12 +1,5 @@
 const Domaine_Scolaire = [
   {
-    quiz: 'Mathématique',
-    texteDescriptif:
-      'Testez vos compétences en calcul et en logique avec ce quiz sur les mathématiques.',
-    img: '/images project/math-qui.webp',
-    lien: 'Questions_Mathematique',
-  },
-  {
     quiz: 'Science',
     texteDescriptif:
       'Découvrez les merveilles de la science avec des questions sur la physique, la chimie et la biologie.',

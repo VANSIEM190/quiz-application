@@ -10,13 +10,13 @@ const Navbar = () => {
             <h3 className="text-lg text-transparent">SMARTQUIZ</h3>
           </div>
           <button
-            className="navbar-toggler"
+            className="navbar-toggler "
             type="button"
             data-bs-toggle="offcanvas"
             data-bs-target="#offcanvasNavbar"
             aria-controls="offcanvasNavbar"
           >
-            <span className="fa fa-bars"></span>
+            <span className="fa fa-bars text-black"></span>
           </button>
           <div
             className="offcanvas offcanvas-end"

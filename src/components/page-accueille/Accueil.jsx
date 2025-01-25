@@ -34,7 +34,10 @@ const Accueil = () => {
               SMARTQUIZ
             </h1>
             <div className="flex justify-center items-center text-red-400 font-serif">
-              <h3 ref={typedRef} className="font-serif text-lg"></h3>
+              <h3
+                ref={typedRef}
+                className="font-serif text-lg text-center"
+              ></h3>
             </div>
             <div className="bg-red-400 text-white w-2/4 rounded-bl-3xl p-2 max-sm2:w-5/6">
               <p>
