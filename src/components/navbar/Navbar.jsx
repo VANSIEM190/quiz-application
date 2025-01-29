@@ -10,7 +10,7 @@ const Navbar = () => {
             <h3 className="text-lg text-transparent">SMARTQUIZ</h3>
           </div>
           <button
-            className="navbar-toggler "
+            className="navbar-toggler"
             type="button"
             data-bs-toggle="offcanvas"
             data-bs-target="#offcanvasNavbar"
