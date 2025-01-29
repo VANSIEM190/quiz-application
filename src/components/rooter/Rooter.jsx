@@ -7,6 +7,7 @@ const RooterOptionApp = lazy(() =>
   import('../rooter-option-app/rooter-option-app')
 )
 const VerificationQuiz = lazy(() => import('../verification-quiz/verification'))
+const ErrorPage = lazy(() => import('../erros page/Error-page'))
 
 const Rooter = () => {
   return (
@@ -27,6 +28,7 @@ const Rooter = () => {
           path="/quiz-catégories/:type/:type"
           element={<VerificationQuiz />}
         />
+        <Route path="*" element={<ErrorPage />} />
       </Routes>
     </Suspense>
   )
