@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Delius+Swash+Caps&display=swap');
+@import 'tailwindcss';
+
+/* Reset minimal qui n'écrase pas les utilitaires Tailwind */
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+@theme {
+  --breakpoint-xs: 30rem;
+  --breakpoint-xs1: 23rem;
+  --breakpoint-xs2: 18rem;
+  --breakpoint-2xl: 100rem;
+  --breakpoint-3xl: 120rem;
+  --breakpoint-sm: 620px;
+  --breakpoint-sm2: 1000px;
+}
+
+.bg {
+  clip-path: polygon(
+    74.1% 44.1%,
+    100% 61.6%,
+    97.5% 26.9%,
+    85.5% 0.1%,
+    80.7% 2%,
+    72.5% 32.5%,
+    60.2% 62.4%,
+    52.4% 68.1%,
+    47.5% 58.3%,
+    45.2% 34.5%,
+    27.5% 76.7%,
+    0.1% 64.9%,
+    17.9% 100%,
+    27.6% 76.8%,
+    76.1% 97.7%,
+    74.1% 44.1%
+  );
+}
+
+.delius-swash-caps-regular {
+  font-family: 'Delius Swash Caps', cursive;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.loader {
+  font-size: 48px;
+  font-weight: 600;
+  display: inline-block;
+  letter-spacing: 2px;
+  font-family: 'Delius Swash Caps', cursive;
+  font-weight: 400;
+  font-style: normal;
+  color: #fff;
+  box-sizing: border-box;
+  animation: spotlight 2s linear infinite alternate;
+}
+
+@keyframes spotlight {
+  0%,
+  20% {
+    opacity: 1;
+    letter-spacing: 2px;
+  }
+  80%,
+  100% {
+    opacity: 0;
+    letter-spacing: 32px;
+  }
+}

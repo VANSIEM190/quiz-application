@@ -1,0 +1,6 @@
+export { default as Accueil } from './Accueil'
+export { default as Classement } from './Classement'
+export { default as DashBoard } from './DashBoard'
+export { default as QuizPage } from './QuizPage'
+export { default as Propos } from './Propos'
+export { default as ErrorPage } from './ErrorPage'

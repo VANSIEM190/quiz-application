@@ -1,110 +1,182 @@
 import { useState } from 'react'
-import Navbar from '../navbar/Navbar'
-import PropTypes from 'prop-types'
-import AfficheResultatQuiz from '../affiche-resultat-quiz/Affiche-resultat-quiz'
-import Swal from 'sweetalert2'
+import { useParams } from 'react-router-dom'
+import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore'
+import { db } from '../../services/firebaseConfig'
+import AfficheResultatQuiz from '../common/Affiche-resultat-quiz'
+import questions from '../../utils/questions/quizs'
+import { useUser } from '../../context/UserProfilContext'
 
-const Quiz = ({ questionsList }) => {
+const Quiz = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [score, setScore] = useState(0)
   const [isvisible, setIsVisible] = useState(true)
+  const [isCorrectAnswer, setIsCorrectAnswer] = useState(null) // bonne réponse
+  const [selectedOption, setSelectedOption] = useState(null) // option cliquée
+  const { typeQuiz } = useParams()
+  const questionsList = questions[typeQuiz]
+  const currentQuestion = questionsList[currentQuestionIndex]
+  const { userInformation } = useUser()
+  const resultatProgress = Math.floor(
+    (currentQuestionIndex / questionsList.length) * 100
+  )
 
-  const afficheMessage = (titleMessage, textMessage, iconMessage) => {
-    Swal.fire({
-      icon: iconMessage,
-      title: titleMessage,
-      text: textMessage,
-    })
-  }
-
-  const handleOptionClick = (selectedOption) => {
+  const handleOptionClick = (option) => {
     const currentQuestion = questionsList[currentQuestionIndex]
-    if (selectedOption === currentQuestion.answer) {
+    setSelectedOption(option) // mémorise l’option choisie
+
+    if (option === currentQuestion.answer) {
       setScore(score + 1)
-      afficheMessage('Bonne réponse', 'Felicitation!', 'success')
-    } else {
-      afficheMessage(
-        'Mauvaise réponse',
-        `la bonne réponse était :  ${currentQuestion.answer}`,
-        'error'
-      )
     }
 
-    const nextQuestionIndex = currentQuestionIndex + 1
-    if (nextQuestionIndex < questionsList.length) {
-      setCurrentQuestionIndex(nextQuestionIndex)
-    } else {
-      ;<AfficheResultatQuiz
-        score={score + 1}
-        tailleTableau={questionsList.length}
-      />
-      setIsVisible(false)
-    }
+    setIsCorrectAnswer(currentQuestion.answer) // garde la bonne réponse
+
+    setTimeout(async () => {
+      if (currentQuestionIndex < questionsList.length - 1) {
+        setCurrentQuestionIndex(currentQuestionIndex + 1)
+        setIsCorrectAnswer(null)
+        setSelectedOption(null)
+      } else {
+        setIsVisible(false)
+
+        try {
+          if (userInformation.userId) {
+            await updateUserScore(userInformation.userId, typeQuiz, score)
+          }
+        } catch (err) {
+          console.error('Erreur lors de la mise à jour du score:', err)
+        }
+      }
+    }, 1000)
   }
 
   const reprendreJeux = () => {
     setIsVisible(true)
     setCurrentQuestionIndex(0)
+    setScore(0)
+    setIsCorrectAnswer(null)
+    setSelectedOption(null)
   }
-  const currentQuestion = questionsList[currentQuestionIndex]
+
+  async function updateUserScore(userId, quizName, newScore) {
+    const userRef = doc(db, 'scores', userId)
+    const snap = await getDoc(userRef)
+
+    let scores = {}
+    if (snap.exists()) {
+      scores = snap.data()
+    }
+    scores[quizName] = { min: newScore, max: questionsList.length }
+    // Extraire uniquement les scores numériques
+    const quizScores = Object.fromEntries(
+      Object.entries(scores).filter(
+        ([, value]) =>
+          typeof value === 'object' &&
+          value !== null &&
+          'min' in value &&
+          'max' in value
+      )
+    )
+
+    const totalMin = Object.values(quizScores).reduce(
+      (sum, quiz) => sum + (Number(quiz.min) || 0),
+      0
+    )
+
+    const totalMax = Object.values(quizScores).reduce(
+      (sum, quiz) => sum + (Number(quiz.max) || 0),
+      0
+    )
+
+    console.log(Object.keys(quizScores), quizScores.quizItems)
+
+    await setDoc(
+      userRef,
+      {
+        userId,
+        userProfil: userInformation.initialsProfil,
+        username: userInformation.nom,
+        userFirstname: userInformation.prenom,
+        quizItems: Object.keys(quizScores),
+        ...quizScores,
+        globalScore: totalMin,
+        notesMax: totalMax,
+        timestamp: serverTimestamp() || new Date(),
+      },
+      { merge: true }
+    )
+  }
 
   return (
-    <>
-      <Navbar />
-      <div className="w-screen h-screen flex justify-center items-center ">
-        {isvisible ? (
-          <div className="container bg-white rounded py-5 max-sm:h-screen flex justify-center items-center flex-col">
-            <div className="bg-hero-pattern bg-clip-text">
-              <h3 className="text-lg text-transparent">SMARTQUIZ</h3>
+    <div className="flex justify-center items-center h-125 delius-swash-caps-regular">
+      {isvisible ? (
+        <div className="w-[40%] bg-white rounded px-4 py-10 max-sm:h-max max-sm:w-max flex justify-center items-center flex-col">
+          <div className="w-full p-3">
+            <div className="w-full px-3 pb-1 flex justify-between items-center max-xs1:flex-col">
+              <h5 className="text-sm text-gray-900">{typeQuiz}</h5>
+              <span className="text-sm font-medium text-gray-900">
+                Question {currentQuestionIndex + 1} / {questionsList.length}
+              </span>
             </div>
-            <div className="flex justify-center items-center flex-col gap-3">
-              <div className="bg-hero-pattern bg-clip-text text-center">
-                <h3 className="text-lg text-transparent">
-                  {currentQuestionIndex + 1}. {currentQuestion.question}
-                </h3>
-              </div>
-              <div className=" w-4/5 flex flex-col gap-2">
-                {currentQuestion.options.map((option, index) => (
+            <div className="w-full h-3 bg-gray-200 rounded-md">
+              <div
+                className="bg-gray-900 h-3 rounded-md transition-all duration-300"
+                style={{ width: `${resultatProgress}%` }}
+              />
+            </div>
+            <div className="w-full flex justify-between items-center px-3 max-xs2:flex-col">
+              <span className="text-sm font-medium text-gray-900">
+                Score : {score}/{questionsList.length}
+              </span>
+              <span className="text-sm font-medium text-gray-900">
+                {resultatProgress}% complete
+              </span>
+            </div>
+          </div>
+
+          <div className="w-full flex justify-center items-start flex-col gap-3 px-6">
+            <div className="bg-hero-pattern bg-clip-text text-center">
+              <h5 className="text-sm text-gray-900 font-semibold">
+                {currentQuestion.question}
+              </h5>
+            </div>
+            <div className="w-full flex flex-col gap-2">
+              {currentQuestion.options.map((option, index) => {
+                let buttonColor = 'bg-gray-900' // couleur par défaut
+
+                if (isCorrectAnswer) {
+                  if (option === isCorrectAnswer) {
+                    buttonColor = 'bg-green-500' // bonne réponse
+                  } else if (option === selectedOption) {
+                    buttonColor = 'bg-red-500' // mauvaise réponse choisie
+                  }
+                }
+
+                return (
                   <button
                     key={index}
                     type="button"
-                    className="w-full bg-hero-pattern text-white font-semibold py-2 px-4 rounded"
+                    className={`w-full text-white ${buttonColor} font-semibold py-2 px-4 rounded transition-colors duration-300 cursor-pointer disabled:cursor-not-allowed`}
                     onClick={() => handleOptionClick(option)}
+                    disabled={!!isCorrectAnswer} // bloque après clic
                   >
                     {option}
                   </button>
-                ))}
-              </div>
+                )
+              })}
             </div>
           </div>
-        ) : (
-          <div className="flex justify-center items-center gap-2">
-            <AfficheResultatQuiz
-              score={score + 1}
-              tailleTableau={questionsList.length}
-            />
-            <button
-              type="button"
-              className="btn btn-primary"
-              onClick={reprendreJeux}
-            >
-              reprendre
-            </button>
-          </div>
-        )}
-      </div>
-    </>
+        </div>
+      ) : (
+        <div className="flex justify-center items-center gap-2">
+          <AfficheResultatQuiz
+            score={score}
+            tailleTableau={questionsList.length}
+            reprendre={reprendreJeux}
+          />
+        </div>
+      )}
+    </div>
   )
-}
-
-Quiz.propTypes = {
-  questionsList: PropTypes.arrayOf(
-    PropTypes.shape({
-      question: PropTypes.string.isRequired,
-      options: PropTypes.arrayOf(PropTypes.string).isRequired,
-      answer: PropTypes.string.isRequired,
-    })
-  ).isRequired,
 }
 
 export default Quiz
