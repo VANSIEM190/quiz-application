@@ -31,7 +31,7 @@ const QuizCategories = () => {
                 <Link to={`${option.nomUrl}`}>
                   <button
                     type="button"
-                    className="w-full  bg-linear-to-tr from-[#ff80b5] to-[#9089fc] text-white font-semibold py-2 px-4 rounded  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500 delius-swash-caps-regular"
+                    className="w-full  bg-linear-to-tr from-[#ff80b5] to-[#9089fc] text-white font-semibold py-2 px-4 rounded  focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-purple-500 cursor-pointer delius-swash-caps-regular"
                   >
                     Start Quiz
                   </button>

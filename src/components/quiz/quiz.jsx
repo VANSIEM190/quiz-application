@@ -10,8 +10,8 @@ const Quiz = () => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [score, setScore] = useState(0)
   const [isvisible, setIsVisible] = useState(true)
-  const [isCorrectAnswer, setIsCorrectAnswer] = useState(null) // bonne réponse
-  const [selectedOption, setSelectedOption] = useState(null) // option cliquée
+  const [isCorrectAnswer, setIsCorrectAnswer] = useState(null) // bonne rép
+  const [selectedOption, setSelectedOption] = useState(null)
   const { typeQuiz } = useParams()
   const questionsList = questions[typeQuiz]
   const currentQuestion = questionsList?.[currentQuestionIndex]
