@@ -14,33 +14,58 @@ const Quiz = () => {
   const [selectedOption, setSelectedOption] = useState(null) // option cliquée
   const { typeQuiz } = useParams()
   const questionsList = questions[typeQuiz]
-  const currentQuestion = questionsList[currentQuestionIndex]
+  const currentQuestion = questionsList?.[currentQuestionIndex]
   const { userInformation } = useUser()
+
+  // Vérification de sécurité pour éviter les erreurs en production
+  if (
+    !questionsList ||
+    !Array.isArray(questionsList) ||
+    questionsList.length === 0
+  ) {
+    return (
+      <div className="flex justify-center items-center h-125">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Quiz non trouvé
+          </h3>
+          <p className="text-gray-600">
+            Le quiz &quot;{typeQuiz}&quot; n&apos;existe pas ou est vide.
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   const resultatProgress = Math.floor(
     (currentQuestionIndex / questionsList.length) * 100
   )
 
   const handleOptionClick = (option) => {
     const currentQuestion = questionsList[currentQuestionIndex]
-    setSelectedOption(option) // mémorise l’option choisie
+    setSelectedOption(option) // mémorise l'option choisie
 
+    // Mise à jour du score avec une fonction callback pour éviter les problèmes de closure
     if (option === currentQuestion.answer) {
-      setScore(score + 1)
+      setScore((prevScore) => prevScore + 1)
     }
 
     setIsCorrectAnswer(currentQuestion.answer) // garde la bonne réponse
 
     setTimeout(async () => {
       if (currentQuestionIndex < questionsList.length - 1) {
-        setCurrentQuestionIndex(currentQuestionIndex + 1)
+        setCurrentQuestionIndex((prevIndex) => prevIndex + 1)
         setIsCorrectAnswer(null)
         setSelectedOption(null)
       } else {
         setIsVisible(false)
 
         try {
-          if (userInformation.userId) {
-            await updateUserScore(userInformation.userId, typeQuiz, score)
+          if (userInformation?.userId) {
+            // Utiliser le score actuel + 1 si c'est la bonne réponse
+            const finalScore =
+              option === currentQuestion.answer ? score + 1 : score
+            await updateUserScore(userInformation.userId, typeQuiz, finalScore)
           }
         } catch (err) {
           console.error('Erreur lors de la mise à jour du score:', err)
@@ -136,11 +161,11 @@ const Quiz = () => {
           <div className="w-full flex justify-center items-start flex-col gap-3 px-6">
             <div className="bg-hero-pattern bg-clip-text text-center">
               <h5 className="text-sm text-gray-900 font-semibold">
-                {currentQuestion.question}
+                {currentQuestion?.question || 'Question non disponible'}
               </h5>
             </div>
             <div className="w-full flex flex-col gap-2">
-              {currentQuestion.options.map((option, index) => {
+              {currentQuestion?.options?.map((option, index) => {
                 let buttonColor = 'bg-gray-900' // couleur par défaut
 
                 if (isCorrectAnswer) {
@@ -162,7 +187,11 @@ const Quiz = () => {
                     {option}
                   </button>
                 )
-              })}
+              }) || (
+                <div className="text-center text-gray-500">
+                  Aucune option disponible pour cette question.
+                </div>
+              )}
             </div>
           </div>
         </div>
